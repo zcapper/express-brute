@@ -8,6 +8,8 @@ express-brute
 
 A brute-force protection middleware for express routes that rate-limits incoming requests, increasing the delay with each request in a fibonacci-like sequence.
 
+This is a fork of AdamPflug's [express-brute](https://github.com/AdamPflug/express-brute) that has been migrated to use ES2019+ JS and the latest package versions.
+
 Installation
 ------------
   via npm:
@@ -24,10 +26,10 @@ var store = new ExpressBrute.MemoryStore();
 var bruteforce = new ExpressBrute(store);
 
 app.post('/auth',
-	bruteforce.prevent, // error 429 if we hit this route too often
-	function (req, res, next) {
-		res.send('Success!');
-	}
+  bruteforce.prevent, // error 429 if we hit this route too often
+  function (req, res, next) {
+    res.send('Success!');
+  }
 );
 ```
 
@@ -36,14 +38,14 @@ Classes
 ### ExpressBrute(store, options)
 - `store` An instance of `ExpressBrute.MemoryStore` or some other ExpressBrute store (see a list of known stores below).
 - `options`
-	- `freeRetries`             The number of retries the user has before they need to start waiting (default: 2)
-	- `minWait`                 The initial wait time (in milliseconds) after the user runs out of retries (default: 500 milliseconds)
-	- `maxWait`                 The maximum amount of time (in milliseconds) between requests the user needs to wait (default: 15 minutes). The wait for a given request is determined by adding the time the user needed to wait for the previous two requests.
-	- `lifetime`                The length of time (in seconds since the last request) to remember the number of requests that have been made by an IP. By default it will be set to `maxWait * the number of attempts before you hit maxWait` to discourage simply waiting for the lifetime to expire before resuming an attack. With default values this is about 6 hours.
-	- `failCallback`            Gets called with (`req`, `resp`, `next`, `nextValidRequestDate`) when a request is rejected (default: ExpressBrute.FailForbidden)
-	- `attachResetToRequest`    Specify whether or not a simplified reset method should be attached at `req.brute.reset`. The simplified method takes only a callback, and resets all `ExpressBrute` middleware that was called on the current request. If multiple instances of `ExpressBrute` have middleware on the same request, only those with `attachResetToRequest` set to true will be reset (default: true)
-	- `refreshTimeoutOnRequest` Defines whether the `lifetime` counts from the time of the last request that ExpressBrute didn't prevent for a given IP (true) or from of that IP's first request (false). Useful for allowing limits over fixed periods of time, for example: a limited number of requests per day. (Default: true). [More info](https://github.com/AdamPflug/express-brute/issues/14)
-	- `handleStoreError`        Gets called whenever an error occurs with the persistent store from which ExpressBrute cannot recover. It is passed an object containing the properties `message` (a description of the message), `parent` (the error raised by the session store), and [`key`, `ip`] or [`req`, `res`, `next`] depending on whether or the error occurs during `reset` or in the middleware itself.
+  - `freeRetries`             The number of retries the user has before they need to start waiting (default: 2)
+  - `minWait`                 The initial wait time (in milliseconds) after the user runs out of retries (default: 500 milliseconds)
+  - `maxWait`                 The maximum amount of time (in milliseconds) between requests the user needs to wait (default: 15 minutes). The wait for a given request is determined by adding the time the user needed to wait for the previous two requests.
+  - `lifetime`                The length of time (in seconds since the last request) to remember the number of requests that have been made by an IP. By default it will be set to `maxWait * the number of attempts before you hit maxWait` to discourage simply waiting for the lifetime to expire before resuming an attack. With default values this is about 6 hours.
+  - `failCallback`            Gets called with (`req`, `resp`, `next`, `nextValidRequestDate`) when a request is rejected (default: ExpressBrute.FailForbidden)
+  - `attachResetToRequest`    Specify whether or not a simplified reset method should be attached at `req.brute.reset`. The simplified method takes only a callback, and resets all `ExpressBrute` middleware that was called on the current request. If multiple instances of `ExpressBrute` have middleware on the same request, only those with `attachResetToRequest` set to true will be reset (default: true)
+  - `refreshTimeoutOnRequest` Defines whether the `lifetime` counts from the time of the last request that ExpressBrute didn't prevent for a given IP (true) or from of that IP's first request (false). Useful for allowing limits over fixed periods of time, for example: a limited number of requests per day. (Default: true). [More info](https://github.com/AdamPflug/express-brute/issues/14)
+  - `handleStoreError`        Gets called whenever an error occurs with the persistent store from which ExpressBrute cannot recover. It is passed an object containing the properties `message` (a description of the message), `parent` (the error raised by the session store), and [`key`, `ip`] or [`req`, `res`, `next`] depending on whether or the error occurs during `reset` or in the middleware itself.
 
 ### ExpressBrute.MemoryStore()
 An in-memory store for persisting request counts. Don't use this in production, instead choose one of the more robust store implementations listed below.
@@ -52,18 +54,18 @@ An in-memory store for persisting request counts. Don't use this in production, 
 `ExpressBrute` Instance Methods
 -------------------------------
 - `prevent(req, res, next)` Middleware that will bounce requests that happen faster than
-	                        the current wait time by calling `failCallback`. Equivilent to `getMiddleware(null)`
+                          the current wait time by calling `failCallback`. Equivilent to `getMiddleware(null)`
 - `getMiddleware(options)`  Generates middleware that will bounce requests with the same `key` and IP address
-	                        that happen faster than the current wait time by calling `failCallback`.
-	                        Also attaches a function at `req.brute.reset` that can be called to reset the
-	                        counter for the current ip and key. This functions as the `reset` instance method,
-	                        but without the need to explicitly pass the `ip` and `key` paramters
-	- `key`                 can be a string or alternatively it can be a `function(req, res, next)`
-	                        that calls `next`, passing a string as the first parameter.
-	- `failCallback`        Allows you to override the value of `failCallback` for this middleware
-	- `ignoreIP`            Disregard IP address when matching requests if set to `true`. Defaults to `false`.
+                          that happen faster than the current wait time by calling `failCallback`.
+                          Also attaches a function at `req.brute.reset` that can be called to reset the
+                          counter for the current ip and key. This functions as the `reset` instance method,
+                          but without the need to explicitly pass the `ip` and `key` paramters
+  - `key`                 can be a string or alternatively it can be a `function(req, res, next)`
+                          that calls `next`, passing a string as the first parameter.
+  - `failCallback`        Allows you to override the value of `failCallback` for this middleware
+  - `ignoreIP`            Disregard IP address when matching requests if set to `true`. Defaults to `false`.
 - `reset(ip, key, next)`    Resets the wait time between requests back to its initial value. You can pass `null`
-	                        for `key` if you want to reset a request protected by `prevent`.
+                          for `key` if you want to reset a request protected by `prevent`.
 
 Built-in Failure Callbacks
 ---------------------------
@@ -94,71 +96,71 @@ A More Complex Example
 ``` js
 require('connect-flash');
 var ExpressBrute = require('express-brute'),
-	MemcachedStore = require('express-brute-memcached'),
-	moment = require('moment'),
+  MemcachedStore = require('express-brute-memcached'),
+  moment = require('moment'),
     store;
 
 if (config.environment == 'development'){
-	store = new ExpressBrute.MemoryStore(); // stores state locally, don't use this in production
+  store = new ExpressBrute.MemoryStore(); // stores state locally, don't use this in production
 } else {
-	// stores state with memcached
-	store = new MemcachedStore(['127.0.0.1'], {
-		prefix: 'NoConflicts'
-	});
+  // stores state with memcached
+  store = new MemcachedStore(['127.0.0.1'], {
+    prefix: 'NoConflicts'
+  });
 }
 
 var failCallback = function (req, res, next, nextValidRequestDate) {
-	req.flash('error', "You've made too many failed attempts in a short period of time, please try again "+moment(nextValidRequestDate).fromNow());
-	res.redirect('/login'); // brute force protection triggered, send them back to the login page
+  req.flash('error', "You've made too many failed attempts in a short period of time, please try again "+moment(nextValidRequestDate).fromNow());
+  res.redirect('/login'); // brute force protection triggered, send them back to the login page
 };
 var handleStoreError = function (error) {
-	log.error(error); // log this error so we can figure out what went wrong
-	// cause node to exit, hopefully restarting the process fixes the problem
-	throw {
-		message: error.message,
-		parent: error.parent
-	};
+  log.error(error); // log this error so we can figure out what went wrong
+  // cause node to exit, hopefully restarting the process fixes the problem
+  throw {
+    message: error.message,
+    parent: error.parent
+  };
 }
 // Start slowing requests after 5 failed attempts to do something for the same user
 var userBruteforce = new ExpressBrute(store, {
-	freeRetries: 5,
-	minWait: 5*60*1000, // 5 minutes
-	maxWait: 60*60*1000, // 1 hour,
-	failCallback: failCallback,
-	handleStoreError: handleStoreError
+  freeRetries: 5,
+  minWait: 5*60*1000, // 5 minutes
+  maxWait: 60*60*1000, // 1 hour,
+  failCallback: failCallback,
+  handleStoreError: handleStoreError
 });
 // No more than 1000 login attempts per day per IP
 var globalBruteforce = new ExpressBrute(store, {
-	freeRetries: 1000,
-	attachResetToRequest: false,
-	refreshTimeoutOnRequest: false,
-	minWait: 25*60*60*1000, // 1 day 1 hour (should never reach this wait time)
-	maxWait: 25*60*60*1000, // 1 day 1 hour (should never reach this wait time)
-	lifetime: 24*60*60, // 1 day (seconds not milliseconds)
-	failCallback: failCallback,
-	handleStoreError: handleStoreError
+  freeRetries: 1000,
+  attachResetToRequest: false,
+  refreshTimeoutOnRequest: false,
+  minWait: 25*60*60*1000, // 1 day 1 hour (should never reach this wait time)
+  maxWait: 25*60*60*1000, // 1 day 1 hour (should never reach this wait time)
+  lifetime: 24*60*60, // 1 day (seconds not milliseconds)
+  failCallback: failCallback,
+  handleStoreError: handleStoreError
 });
 
 app.set('trust proxy', 1); // Don't set to "true", it's not secure. Make sure it matches your environment
 app.post('/auth',
-	globalBruteforce.prevent,
-	userBruteforce.getMiddleware({
-		key: function(req, res, next) {
-			// prevent too many attempts for the same username
-			next(req.body.username);
-		}
-	}),
-	function (req, res, next) {
-		if (User.isValidLogin(req.body.username, req.body.password)) { // omitted for the sake of conciseness
-		 	// reset the failure counter so next time they log in they get 5 tries again before the delays kick in
-			req.brute.reset(function () {
-				res.redirect('/'); // logged in, send them to the home page
-			});
-		} else {
-			res.flash('error', "Invalid username or password")
-			res.redirect('/login'); // bad username/password, send them back to the login page
-		}
-	}
+  globalBruteforce.prevent,
+  userBruteforce.getMiddleware({
+    key: function(req, res, next) {
+      // prevent too many attempts for the same username
+      next(req.body.username);
+    }
+  }),
+  function (req, res, next) {
+    if (User.isValidLogin(req.body.username, req.body.password)) { // omitted for the sake of conciseness
+       // reset the failure counter so next time they log in they get 5 tries again before the delays kick in
+      req.brute.reset(function () {
+        res.redirect('/'); // logged in, send them to the home page
+      });
+    } else {
+      res.flash('error', "Invalid username or password")
+      res.redirect('/login'); // bad username/password, send them back to the login page
+    }
+  }
 );
 ```
 
@@ -172,6 +174,8 @@ Please note: don't use the value `true` because it tells express to trust the wh
 
 Changelog
 ---------
+### v1.1.0
+
 ### v1.0.1
 * BUG: Fixed an edge case where freeretries weren't being respected if app servers had slightly different times
 

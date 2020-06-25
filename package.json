@@ -17,29 +17,51 @@
   "license": "BSD",
   "private": false,
   "scripts": {
-    "test": "./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha spec"
+    "build": "babel index.js -d dist",
+    "test": "cross-env NODE_ENV=test nyc mocha spec",
+    "test-old": "npx istanbul cover ./node_modules/mocha/bin/_mocha spec",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
     "url": "git@github.com:AdamPflug/express-brute.git"
   },
   "devDependencies": {
+    "@babel/cli": "^7.10.3",
+    "@babel/plugin-proposal-class-properties": "^7.10.1",
+    "@babel/preset-env": "^7.10.3",
+    "@babel/register": "^7.10.3",
+    "babel-eslint": "^10.1.0",
+    "babel-plugin-istanbul": "^6.0.0",
     "chai": "^4.2.0",
     "coveralls": "^3.1.0",
+    "cross-env": "^7.0.2",
     "eslint": "^7.3.1",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.21.2",
     "istanbul": "^0.4.5",
     "mocha": "^8.0.1",
     "mocha-lcov-reporter": "^1.3.0",
+    "nyc": "^15.1.0",
     "sinon": "^9.0.2",
     "sinon-chai": "^3.5.0"
   },
   "dependencies": {
-    "long-timeout": "~0.1.1",
+    "long-settimeout": "^1.0.1",
     "underscore": "^1.10.2"
   },
   "peerDependencies": {
     "express": "4.x"
+  },
+  "nyc": {
+    "require": [
+      "@babel/register"
+    ],
+    "reporter": [
+      "lcov",
+      "text"
+    ],
+    "sourceMap": false,
+    "instrument": false
   }
 }
